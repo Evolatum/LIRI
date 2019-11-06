@@ -1,15 +1,14 @@
 require("dotenv").config();
 var keys = require("./keys.js");
 
-axios = require("axios");
+var axios = require("axios");
+var moment = require('moment');
 
-/*console.log(keys.OMDB.key);
-console.log(keys.spotify.id);
-console.log(keys.spotify.secret);
-console.log(keys.BIT.id);*/
+//console.log(keys.spotify.id);
+//console.log(keys.spotify.secret);
 
 var command = process.argv[2];
-var args = process.argv.splice(3).join("+");
+var args = process.argv.slice(3).join("+");
 
 
 
@@ -34,4 +33,32 @@ var OMDB = {
     },
 }
 
-OMDB.query(args);
+var BIT = {
+    queryUrl:[`https://rest.bandsintown.com/artists/`,`/events?app_id=${keys.BIT.id}`],
+
+    query:function (band){
+        axios.get(this.queryUrl[0]+band+this.queryUrl[1]).then(
+            function(response) {
+                for(event of response.data){
+                    console.log(`Venue: ${event.venue.name} in ${event.venue.city}, ${event.venue.country}`);
+                    console.log(moment(event.datetime).format("MM/DD/YYYY"));
+                    console.log();
+                    //Date of the Event (use moment to format this as "MM/DD/YYYY")
+                }
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+    },
+}
+
+switch(command){
+    case "movie-this":
+        OMDB.query(args);
+        break;
+    case "concert-this":
+        BIT.query(args);
+        break;
+    default:
+        console.log("Invalid command...");
+}
