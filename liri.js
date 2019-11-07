@@ -1,5 +1,7 @@
 require("dotenv").config();
 var keys = require("./keys.js");
+
+var fs = require("fs");
 var axios = require("axios");
 var moment = require('moment');
 var inquirer = require("inquirer");
@@ -133,6 +135,24 @@ var Q = {
     }
 }
 
+var logger = {
+    append:function(log){
+        fs.appendFile("log.txt","LIRI "+log, function(err) {
+            if (err) console.log(err);
+        });
+    },
+    read:function(){
+        fs.readFile("log.txt", "utf8", function(err, data) {
+            if (err) {
+                console.log(err);
+            } else{
+                console.log(data);
+            }
+        });
+    }
+}
+
+logger.append(`${command}${args===""?"":" "+args}, `);
 
 switch(command){
     case "movie-this":
@@ -153,6 +173,9 @@ switch(command){
             "  <concert-this artist> to receive upcoming concerts from the artist.\n"+
             "  <spotify-this song> to receive a song's artist and spotify information.\n"+
             "  <interactive-mode> to initialize LIRI's guided mode.\n");
+        break;
+    case "log":
+        logger.read();
         break;
     default:
         console.log("Invalid command.\nType <help> for list of commands.");
