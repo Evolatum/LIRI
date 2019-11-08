@@ -60,6 +60,7 @@ var BIT = {
                         //If band is found but no concerts appear in the API response
                         console.log(`The band ${band} has no upcoming concerts.`);
                     }else{
+                        console.log(`Upcoming concerts for ${band}:\n`);
                         //Displays every venue given by API
                         for(event of response.data){
                             console.log(`Venue: ${event.venue.name} in ${event.venue.city}, ${event.venue.country}`);
@@ -151,17 +152,8 @@ var Q = {
           }
         ])
         .then(function(response) {
-            switch(command){
-                case "movie-this":
-                    OMDB.query(response.args);
-                    break;
-                case "concert-this":
-                    BIT.query(response.args);
-                    break;
-                case "spotify-this":
-                    SAPI.query(response.args);
-                    break;
-            }
+            //Calls LIRI with the command from previous inquierer call and the argument response given in this call
+            LIRI(command, response.args);
         });
     }
 }
@@ -187,33 +179,38 @@ var logger = {
     }
 }
 
-//Append every command
-logger.append(`${command}${args===""?"":" "+args}, `);
+//Function that receives command from terminal and sends arguments to its respective object
+function LIRI(command, args){
+    //Calls logger methos append to log the command and arguments given
+    logger.append(`${command}${args===""?"":" "+args}, `);
 
-//Switch to retrieve the command from terminal and send arguments to its respective object
-switch(command){
-    case "movie-this":
-        OMDB.query(args);
-        break;
-    case "concert-this":
-        BIT.query(args);
-        break;
-    case "spotify-this":
-        SAPI.query(args);
-        break;
-    case "interactive-mode":
-        Q.askCommand();
-        break;
-    case "help":
-        console.log("Available commands:\n"+
-            "  <movie-this title> to receive information about a movie.\n"+
-            "  <concert-this artist> to receive upcoming concerts from the artist.\n"+
-            "  <spotify-this song> to receive a song's artist and spotify information.\n"+
-            "  <interactive-mode> to initialize LIRI's guided mode.\n");
-        break;
-    case "log":
-        logger.read();
-        break;
-    default:
-        console.log("Invalid command.\nType <help> for list of commands.");
+    //Receives command and sends arguments to respective object
+    switch(command){
+        case "movie-this":
+            OMDB.query(args);
+            break;
+        case "concert-this":
+            BIT.query(args);
+            break;
+        case "spotify-this":
+            SAPI.query(args);
+            break;
+        case "interactive-mode":
+            Q.askCommand();
+            break;
+        case "help":
+            console.log("Available commands:\n"+
+                "  <movie-this title> to receive information about a movie.\n"+
+                "  <concert-this artist> to receive upcoming concerts from the artist.\n"+
+                "  <spotify-this song> to receive a song's artist and spotify information.\n"+
+                "  <interactive-mode> to initialize LIRI's guided mode.\n");
+            break;
+        case "log":
+            logger.read();
+            break;
+        default:
+            console.log("Invalid command.\nType <help> for list of commands.");
+    }
 }
+
+LIRI(command,args);
