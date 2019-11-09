@@ -122,7 +122,7 @@ var SAPI = {
 //Object that contains Inquirer package funtionality
 var Q = {
     //Available commands
-    commands:["movie-this","concert-this","spotify-this","exit"],
+    commands:["movie-this","concert-this","spotify-this","random","log","exit"],
 
     //Asks which command from list
     askCommand:function(){
@@ -136,8 +136,11 @@ var Q = {
           }
         ])
         .then(function(response) {
-            //If user selects exit
-            response.choice==="exit"?console.log("Thank you for using interactive mode..."):Q.askArg(response.choice);
+            //If user selects exit it displays a message and exits; if random or log is selected, LIRI is called directly;
+            //if another choice is selected, interactive mode calls askArg function to request additional arguments
+            if(response.choice==="exit")console.log("Thank you for using interactive mode...")
+            else if(response.choice==="random"||response.choice==="log")LIRI(response.choice);
+            else Q.askArg(response.choice);
         });
     },
     
@@ -167,22 +170,42 @@ var logger = {
         });
     },
 
-    //Displays in console everything in the file but the last comma
+    //Displays in console every command logged in the file
     read:function(){
         fs.readFile("log.txt", "utf8", function(err, data) {
             if (err) {
                 console.log(err);
             } else{
-                console.log(data.substring(0,data.length-2));
+                dataArr = data.split(",");
+                for(let log of dataArr) console.log(log);
             }
         });
     }
 }
 
+//Function to read random.txt and call a random command and argument
+function randomCall(){
+    fs.readFile("random.txt", "utf8", function(err, data) {
+        if (err) {
+            console.log(err);
+        } else{
+            dataArr = data.split(",");
+            var random = randomNumber(dataArr.length-1);
+            //console.log(dataArr.length,random,dataArr[random].split(" ")[0],dataArr[random].split(" ")[1]);
+            LIRI(dataArr[random].split(" ")[0],dataArr[random].split(" ")[1]);
+        }
+    });
+}
+
+//Functions that returns a random number between max and min, including both
+function randomNumber (max=10, min=1){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 //Function that receives command from terminal and sends arguments to its respective object
 function LIRI(command, args){
     //Calls logger methos append to log the command and arguments given
-    logger.append(`${command}${args===""?"":" "+args}, `);
+    logger.append(`${command}${args===""||args==undefined?"":" "+args}, `);
 
     //Receives command and sends arguments to respective object
     switch(command){
@@ -197,6 +220,9 @@ function LIRI(command, args){
             break;
         case "interactive-mode":
             Q.askCommand();
+            break;
+        case "random":
+            randomCall();
             break;
         case "help":
             console.log("Available commands:\n"+
